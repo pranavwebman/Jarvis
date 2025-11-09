@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learna - Self-Learning Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #4a00e0, #8e2de2);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .status {
+            position: absolute;
+            right: 25px;
+            top: 25px;
+            display: flex;
+            align-items: center;
+            font-size: 0.95rem;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #4ade80;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .chat-container {
+            flex: 3;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #eee;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 25px;
+            overflow-y: auto;
+            background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .bot-message {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            font-size: 1rem;
+            line-height: 1.5;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .user-message .message-bubble {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .bot-message .message-bubble {
+            background-color: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .bot-message .message-time {
+            text-align: left;
+        }
+
+        .input-area {
+            padding: 25px;
+            border-top: 1px solid #eee;
+            display: flex;
+            background: white;
+        }
+
+        .input-area input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: #8e2de2;
+            box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.1);
+        }
+
+        .input-area button {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 30px;
+            margin-left: 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(142, 45, 226, 0.3);
+        }
+
+        .input-area button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(142, 45, 226, 0.4);
+        }
+
+        .knowledge-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(to bottom, #f8f9fa, #ffffff);
+            padding: 25px;
+            overflow-y: auto;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #4a00e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .knowledge-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            border-color: #8e2de2;
+            box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .knowledge-form button {
+            background: linear-gradient(135deg, #4a00e0, #8e2de2);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(142, 45, 226, 0.3);
+        }
+
+        .knowledge-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(142, 45, 226, 0.4);
+        }
+
+        .knowledge-list {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .knowledge-item {
+            background: linear-gradient(to right, #f8f9fa, #ffffff);
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #8e2de2;
+            transition: all 0.3s;
+        }
+
+        .knowledge-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .knowledge-question {
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #2d3748;
+            font-size: 1.05rem;
+        }
+
+        .knowledge-answer {
+            color: #4a5568;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .delete-btn {
+            background-color: #e53e3e;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 12px;
+            float: right;
+            transition: all 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: #c53030;
+            transform: scale(1.05);
+        }
+
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 18px;
+            background-color: #f1f3f4;
+            border-radius: 20px;
+            font-style: italic;
+            color: #666;
+        }
+
+        .typing-dots {
+            display: flex;
+            margin-left: 8px;
+        }
+
+        .typing-dots span {
+            height: 8px;
+            width: 8px;
+            background-color: #666;
+            border-radius: 50%;
+            display: block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .file-upload {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .file-upload button {
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .file-upload button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 180, 219, 0.4);
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .chat-container {
+                border-right: none;
+                border-bottom: 1px solid #eee;
+                min-height: 60vh;
+            }
+            
+            .knowledge-panel {
+                min-height: 40vh;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 Learna</h1>
+            <p>Your Self-Learning Chatbot with Pre-trained Knowledge</p>
+            <div class="status">
+                <div class="status-dot"></div>
+                <span>Online & Learning</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message bot-message">
+                        <div class="message-bubble">
+                            <strong>Hello! I'm Learna! 🤖</strong><br><br>
+                            I come with pre-trained knowledge about programming, science, and general topics. You can ask me questions or teach me new things using the knowledge panel!
+                            <div class="message-time" id="currentTime"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="input-area">
+                    <input type="text" id="userInput" placeholder="Ask me anything about programming, science, or general knowledge...">
+                    <button id="sendButton">Send</button>
+                </div>
+            </div>
+            
+            <div class="knowledge-panel">
+                <div class="panel-title">
+                    Knowledge Base
+                    <span id="knowledgeCount">Loading...</span>
+                </div>
+                
+                <div class="knowledge-form">
+                    <div class="form-group">
+                        <label for="questionInput">Question/Keyword</label>
+                        <input type="text" id="questionInput" placeholder="What is machine learning?">
+                    </div>
+                    <div class="form-group">
+                        <label for="answerInput">Answer</label>
+                        <textarea id="answerInput" placeholder="Machine learning is a subset of AI that enables computers to learn without explicit programming..."></textarea>
+                    </div>
+                    <button id="addKnowledgeButton">➕ Add to Knowledge Base</button>
+                    
+                    <div class="file-upload">
+                        <button id="exportButton">📥 Export Knowledge</button>
+                        <button id="importButton" style="margin-left: 10px; background: linear-gradient(135deg, #00b4db, #0083b0);">📤 Import Knowledge</button>
+                        <input type="file" id="fileInput" accept=".txt,.json" style="display: none;">
+                    </div>
+                </div>
+                
+                <div class="knowledge-list" id="knowledgeList">
+                    <!-- Knowledge items will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const chatMessages = document.getElementById('chatMessages');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('sendButton');
+        const questionInput = document.getElementById('questionInput');
+        const answerInput = document.getElementById('answerInput');
+        const addKnowledgeButton = document.getElementById('addKnowledgeButton');
+        const knowledgeList = document.getElementById('knowledgeList');
+        const knowledgeCount = document.getElementById('knowledgeCount');
+        const currentTimeElement = document.getElementById('currentTime');
+        const exportButton = document.getElementById('exportButton');
+        const importButton = document.getElementById('importButton');
+        const fileInput = document.getElementById('fileInput');
+
+        // Pre-trained knowledge base
+        const preTrainedKnowledge = [
+            {
+                question: "what is javascript",
+                answer: "JavaScript is a programming language used for web development. It allows you to create dynamic and interactive web pages."
+            },
+            {
+                question: "what is html",
+                answer: "HTML (HyperText Markup Language) is the standard language for creating web pages. It describes the structure of a web page."
+            },
+            {
+                question: "what is css",
+                answer: "CSS (Cascading Style Sheets) is used to style and layout web pages. It controls colors, fonts, spacing, and positioning."
+            },
+            {
+                question: "what is python",
+                answer: "Python is a high-level programming language known for its simplicity and readability. It's used for web development, data science, AI, and more."
+            },
+            {
+                question: "what is machine learning",
+                answer: "Machine learning is a subset of artificial intelligence that enables computers to learn and make decisions from data without explicit programming."
+            },
+            {
+                question: "what is artificial intelligence",
+                answer: "Artificial Intelligence (AI) refers to computer systems that can perform tasks that typically require human intelligence, such as learning, problem-solving, and decision-making."
+            },
+            {
+                question: "how does the internet work",
+                answer: "The internet works through a global network of interconnected computers that communicate using standardized protocols like TCP/IP."
+            },
+            {
+                question: "what is a programming language",
+                answer: "A programming language is a formal language that provides instructions to computers to perform specific tasks and create software applications."
+            },
+            {
+                question: "what is responsive design",
+                answer: "Responsive design is an approach to web design that makes web pages render well on a variety of devices and window or screen sizes."
+            },
+            {
+                question: "what is an api",
+                answer: "API (Application Programming Interface) is a set of rules that allows different software applications to communicate with each other."
+            },
+            {
+                question: "what is cloud computing",
+                answer: "Cloud computing is the delivery of computing services over the internet, including storage, processing power, and software, without direct active management by the user."
+            },
+            {
+                question: "what is big data",
+                answer: "Big data refers to extremely large datasets that may be analyzed computationally to reveal patterns, trends, and associations, especially relating to human behavior and interactions."
+            },
+            {
+                question: "what is blockchain",
+                answer: "Blockchain is a distributed database that maintains a continuously growing list of records, called blocks, secured from tampering and revision."
+            },
+            {
+                question: "what is cybersecurity",
+                answer: "Cybersecurity is the practice of protecting systems, networks, and programs from digital attacks aimed at accessing, changing, or destroying sensitive information."
+            },
+            {
+                question: "what is iot",
+                answer: "IoT (Internet of Things) refers to the network of physical objects embedded with sensors, software, and connectivity to exchange data with other devices over the internet."
+            },
+            {
+                question: "what is virtual reality",
+                answer: "Virtual Reality (VR) is a simulated experience that can be similar to or completely different from the real world, using computer technology."
+            },
+            {
+                question: "what is augmented reality",
+                answer: "Augmented Reality (AR) is an interactive experience where real-world objects are enhanced by computer-generated perceptual information."
+            },
+            {
+                question: "what is git",
+                answer: "Git is a distributed version control system that tracks changes in source code during software development."
+            },
+            {
+                question: "what is docker",
+                answer: "Docker is a platform that enables developers to package applications into containers—standardized executable components combining application source code with operating system libraries and dependencies."
+            },
+            {
+                question: "what is kubernetes",
+                answer: "Kubernetes is an open-source system for automating deployment, scaling, and management of containerized applications."
+            },
+            {
+                question: "hello",
+                answer: "Hello! I'm Learna, your self-learning chatbot. How can I help you today?"
+            },
+            {
+                question: "hi",
+                answer: "Hi thereI'm here to answer your questions and learn from you. What would you like to know?"
+            },
+            {
+                question: "how are you",
+                answer: "I'm functioning perfectly! As an AI, I don't have feelings, but I'm ready to help you with any questions you have."
+            },
+            {
+                question: "what can you do",
+                answer: "I can answer questions based on my knowledge base, learn new information from you, and help with programming, technology, and general knowledge topics."
+            },
+            {
+                question: "who created you",
+                answer: "I was created as a self-learning chatbot demonstration using HTML, CSS, and JavaScript to show how AI can learn and adapt."
+            }
+        ];
+
+        // Initialize current time
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 60000);
+
+        // Load knowledge base from localStorage or use pre-trained
+        let knowledgeBase = JSON.parse(localStorage.getItem('learnKnowledge')) || [...preTrainedKnowledge];
+        updateKnowledgeList();
+        updateKnowledgeCount();
+
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        addKnowledgeButton.addEventListener('click', addKnowledge);
+        exportButton.addEventListener('click', exportKnowledge);
+        importButton.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', importKnowledge);
+
+        // Functions
+        function updateCurrentTime() {
+            const now = new Date();
+            currentTimeElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+            
+            addMessageToChat(message, 'user');
+            userInput.value = '';
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = generateResponse(message);
+                addMessageToChat(response, 'bot');
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function addMessageToChat(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', `${sender}-message`);
+            
+            const bubbleElement = document.createElement('div');
+            bubbleElement.classList.add('message-bubble');
+            bubbleElement.textContent = message;
+            
+            const timeElement = document.createElement('div');
+            timeElement.classList.add('message-time');
+            timeElement.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            bubbleElement.appendChild(timeElement);
+            messageElement.appendChild(bubbleElement);
+            chatMessages.appendChild(messageElement);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingElement = document.createElement('div');
+            typingElement.classList.add('message', 'bot-message');
+            typingElement.id = 'typingIndicator';
+            
+            const bubbleElement = document.createElement('div');
+            bubbleElement.classList.add('typing-indicator');
+            bubbleElement.textContent = 'Learna is typing';
+            
+            const dotsElement = document.createElement('div');
+            dotsElement.classList.add('typing-dots');
+            
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('span');
+                dotsElement.appendChild(dot);
+            }
+            
+            bubbleElement.appendChild(dotsElement);
+            typingElement.appendChild(bubbleElement);
+            chatMessages.appendChild(typingElement);
+            
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function generateResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Check for exact matches
+            for (const item of knowledgeBase) {
+                if (message.includes(item.question.toLowerCase())) {
+                    return item.answer;
+                }
+            }
+            
+            // Check for keyword matches
+            const words = message.split(' ');
+            for (const word of words) {
+                if (word.length > 3) {
+                    for (const item of knowledgeBase) {
+                        if (item.question.toLowerCase().includes(word)) {
+                            return item.answer;
+                        }
+                    }
+                }
+            }
+            
+            // Default responses
+            const defaultResponses = [
+                "I'm not sure about that. Can you teach me the answer using the knowledge panel?",
+                "That's an interesting question! I don't know the answer yet. Please add it to my knowledge base.",
+                "I'm still learning about that topic. Could you provide an answer in the knowledge panel?",
+                "I don't have information about that yet. Feel free to teach me using the form on the right!"
+            ];
+            
+            return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+        }
+
+        function addKnowledge() {
+            const question = questionInput.value.trim();
+            const answer = answerInput.value.trim();
+            
+            if (question === '' || answer === '') {
+                alert('Please fill in both question and answer fields.');
+                return;
+            }
+            
+            knowledgeBase.push({ question, answer });
+            localStorage.setItem('learnKnowledge', JSON.stringify(knowledgeBase));
+            
+            updateKnowledgeList();
+            updateKnowledgeCount();
+            
+            questionInput.value = '';
+            answerInput.value = '';
+            
+            addMessageToChat(`Thanks! I've learned about "${question}".`, 'bot');
+        }
+
+        function updateKnowledgeList() {
+            knowledgeList.innerHTML = '';
+            
+            if (knowledgeBase.length === 0) {
+                knowledgeList.innerHTML = '<div class="knowledge-item"><div class="knowledge-question">No knowledge added yet</div><div class="knowledge-answer">Use the form above to add knowledge or I\'ll use my pre-trained knowledge.</div></div>';
+                return;
+            }
+            
+            knowledgeBase.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('knowledge-item');
+                
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('knowledge-question');
+                questionElement.textContent = item.question;
+                
+                const answerElement = document.createElement('div');
+                answerElement.classList.add('knowledge-answer');
+                answerElement.textContent = item.answer;
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-btn');
+                deleteButton.textContent = 'Delete';
+                deleteButton.addEventListener('click', () => deleteKnowledgeItem(index));
+                
+                itemElement.appendChild(questionElement);
+                itemElement.appendChild(answerElement);
+                itemElement.appendChild(deleteButton);
+                
+                knowledgeList.appendChild(itemElement);
+            });
+        }
+
+        function updateKnowledgeCount() {
+            knowledgeCount.textContent = `${knowledgeBase.length} items`;
+        }
+
+        function deleteKnowledgeItem(index) {
+            if (confirm('Are you sure you want to delete this knowledge item?')) {
+                knowledgeBase.splice(index, 1);
+                localStorage.setItem('learnKnowledge', JSON.stringify(knowledgeBase));
+                updateKnowledgeList();
+                updateKnowledgeCount();
+            }
+        }
+
+        function exportKnowledge() {
+            const dataStr = JSON.stringify(knowledgeBase, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'learna-knowledge.json';
+            link.click();
+            
+            addMessageToChat('I\'ve exported my knowledge base as a JSON file!', 'bot');
+        }
+
+        function importKnowledge(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (Array.isArray(importedData)) {
+                        knowledgeBase = [...knowledgeBase, ...importedData];
+                        localStorage.setItem('learnKnowledge', JSON.stringify(knowledgeBase));
+                        updateKnowledgeList();
+                        updateKnowledgeCount();
+                        addMessageToChat(`Successfully imported ${importedData.length} knowledge items!`, 'bot');
+                    } else {
+                        throw new Error('Invalid format');
+                    }
+                } catch (error) {
+                    alert('Error importing file. Please make sure it\'s a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>
